@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import docopt
+from datetime import datetime
+from pytz import timezone
+
+
+fmt = '%Y-%m-%d %H:%M'
+
+options = """
+Convert a given date to UTC time, default input timezone is US/Pacific
+
+Usage:
+    pysync <date> <time> [--timezone=<tz>]
+    pysync -h | --help
+
+
+Options:
+    <date>      a Date to convert in format: YYYY-MM-DD
+    <time>      a Time to convert in format: HH:MM
+    --timezone=<tz>  give the Date and Time a custom timezone. [default: US/Pacific]
+    -h --help   This Help.
+""".format()
+
+
+def get_utc(date_time=datetime.now(), date=None, now=False, tz='US/Pacific'):
+    utc = timezone('utc')
+    local = timezone(tz)
+    date_time = local.localize(date_time)
+    if now:
+        return date_time.astimezone(utc).strftime(fmt)
+    if date:
+        return local.localize(datetime.strptime(date, fmt)).astimezone(utc).strftime(fmt)
+    return date_time.astimezone(utc).strftime(fmt)
+
+
+if __name__ == '__main__':
+    arguments = docopt.docopt(options)
+    out_date = ''
+    if arguments['--timezone'] != 'US/Pacific':
+        out_date = get_utc(date="{0} {1}".format(arguments['<date>'], arguments['<time>']), tz=arguments['--timezone'])
+        print(out_date)
+        exit(0)
+    out_date = get_utc(date="{0} {1}".format(arguments['<date>'], arguments['<time>']))
+    print(out_date)
